@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 // const jwt = require("jsonwebtoken");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 
 const port = process.env.PORT || 5000;
@@ -33,15 +33,26 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
-      // -------------------------------collection --------------------
+    // -------------------------------collection --------------------
     const articleCollection = client.db("OnTimeNewsDB").collection("articles");
 
-
-    app.post('/articles', async(req,res)=>{
-      const newArticles = req.body;
-      const result = await articleCollection.insertOne(newArticles);
+    // add and get articles
+    app.get("/articles", async (req, res) => {
+      const result = await articleCollection.find().toArray();
+      res.send(result);
+    });
+    app.get('/articles/:id', async(req, res)=>{
+      const id= req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await articleCollection.findOne(query);
       res.send(result)
     })
+
+    app.post("/articles", async (req, res) => {
+      const newArticles = req.body;
+      const result = await articleCollection.insertOne(newArticles);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });

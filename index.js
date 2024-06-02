@@ -33,6 +33,16 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
+      // -------------------------------collection --------------------
+    const articleCollection = client.db("OnTimeNewsDB").collection("articles");
+
+
+    app.post('/articles', async(req,res)=>{
+      const newArticles = req.body;
+      const result = await articleCollection.insertOne(newArticles);
+      res.send(result)
+    })
+
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log(

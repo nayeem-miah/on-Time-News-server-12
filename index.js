@@ -33,9 +33,12 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
-    // -------------------------------collection --------------------
+    // <------------------------------collection -------------------->
     const articleCollection = client.db("OnTimeNewsDB").collection("articles");
     const userCollection = client.db("OnTimeNewsDB").collection("users");
+    const publisherCollection = client
+      .db("OnTimeNewsDB")
+      .collection("publisher");
 
     // middlewares verify token
     const verifyToken = (req, res, next) => {
@@ -52,6 +55,17 @@ async function run() {
       });
       next();
     };
+    // verifyAdmin
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === "admin";
+      if (!isAdmin) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
 
     // jwt related apis
     app.post("/jwt", async (req, res) => {
@@ -62,11 +76,23 @@ async function run() {
       res.send({ token: token });
     });
     // users related api----------------
-    app.get("/users",verifyToken, async (req, res) => {
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
-
+    app.get("/users/admin/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let admin = false;
+      if (user) {
+        admin = user?.role === "admin";
+      }
+      res.send({ admin });
+    });
     app.post("/users", async (req, res) => {
       const user = req.body;
       // query email from database
@@ -108,6 +134,17 @@ async function run() {
       const result = await articleCollection.insertOne(newArticles);
       res.send(result);
     });
+
+    // ------------------all publisher---------------------------->
+    app.post("/publisher",verifyToken, verifyAdmin, async (req, res) => {
+      const publisher = req.body;
+      const result = await publisherCollection.insertOne(publisher);
+      res.send(result)
+    });
+    app.get('/publisher', async(req, res)=>{
+      const result = await publisherCollection.find().toArray();
+      res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });

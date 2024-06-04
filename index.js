@@ -42,7 +42,7 @@ async function run() {
 
     // middlewares verify token
     const verifyToken = (req, res, next) => {
-      // console.log("inside verified token", req.headers.authorization);
+      // console.log(" verified token", req.headers.authorization);
       if (!req.headers.authorization) {
         return res.status(401).send({ message: "unauthorized access" });
       }
@@ -135,16 +135,58 @@ async function run() {
       res.send(result);
     });
 
+    // My articles
+    app.get("/myArticles/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await articleCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // update articles
+    app.get("/article/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await articleCollection.findOne(query);
+      res.send(result);
+    });
+    app.patch("/updateArticles/:id", async (req, res) => {
+      const article = req.body;
+      // console.log(article);
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          title: article.title,
+          publisher: article.publisher,
+          tags: article.tags,
+          description: article.description,
+          image: article.image,
+          email: article.email,
+          photo: article.photo,
+          displayName: article.displayName,
+        },
+      };
+      const result = await articleCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    app.delete("/article/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await articleCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // ------------------all publisher---------------------------->
-    app.post("/publisher",verifyToken, verifyAdmin, async (req, res) => {
+    app.post("/publisher", verifyToken, verifyAdmin, async (req, res) => {
       const publisher = req.body;
       const result = await publisherCollection.insertOne(publisher);
-      res.send(result)
+      res.send(result);
     });
-    app.get('/publisher', async(req, res)=>{
+    app.get("/publisher", async (req, res) => {
       const result = await publisherCollection.find().toArray();
-      res.send(result)
-    })
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });

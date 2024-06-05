@@ -80,19 +80,24 @@ async function run() {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
-    app.get("/users/admin/:email", verifyToken, async (req, res) => {
-      const email = req.params.email;
-      if (email !== req.decoded.email) {
-        return res.status(403).send({ message: "forbidden access" });
+    app.get(
+      "/users/admin/:email",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const email = req.params.email;
+        if (email !== req.decoded.email) {
+          return res.status(403).send({ message: "forbidden access" });
+        }
+        const query = { email: email };
+        const user = await userCollection.findOne(query);
+        let admin = false;
+        if (user) {
+          admin = user?.role === "admin";
+        }
+        res.send({ admin });
       }
-      const query = { email: email };
-      const user = await userCollection.findOne(query);
-      let admin = false;
-      if (user) {
-        admin = user?.role === "admin";
-      }
-      res.send({ admin });
-    });
+    );
     app.post("/users", async (req, res) => {
       const user = req.body;
       // query email from database
@@ -105,16 +110,41 @@ async function run() {
       res.send(result);
     });
 
-    // admin apis
+    // ---------admin apis--------------------------
     app.patch("/users/admin/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
-      updateDoc = {
+      const updateDoc = {
         $set: {
           role: "admin",
         },
       };
       const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    //-------- all articles approved admin------------------
+    app.patch("/admin-articles/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "approve",
+        },
+      };
+      const result = await articleCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    //-------- all articles approved admin------------------
+    app.patch("/isPremium-articles/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          isPremium: "Premium",
+        },
+      };
+      const result = await articleCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
     // add and get articles

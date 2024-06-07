@@ -76,7 +76,7 @@ async function run() {
       res.send({ token: token });
     });
     // users related api----------------
-    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
+    app.get("/users",  async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -152,6 +152,9 @@ async function run() {
         res.send(result);
       }
     );
+
+
+    // --------view count --------------------------apis 
     app.patch("/viewCount/:id", async (req, res) => {
       const view = req.body;
       const id = req.params.id;
@@ -164,6 +167,8 @@ async function run() {
       const result = await articleCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+
+    //  decline----------
     app.patch("/decline/:id", async (req, res) => {
       const newDecline = req.body;
       const id = req.params.id;
@@ -179,6 +184,10 @@ async function run() {
     // add and get articles
     app.get("/articles", async (req, res) => {
       const result = await articleCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/articlesCount", async (req, res) => {
+      const result = await articleCollection.find().sort({viewCount: -1}).limit(6).toArray();
       res.send(result);
     });
     app.get("/searchArticles", async (req, res) => {

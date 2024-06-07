@@ -182,7 +182,7 @@ async function run() {
       res.send(result);
     });
     // add and get articles
-    app.get("/articles", async (req, res) => {
+    app.get("/articles",verifyToken, async (req, res) => {
       const result = await articleCollection.find().toArray();
       res.send(result);
     });
@@ -220,7 +220,7 @@ async function run() {
     });
 
     // My articles
-    app.get("/myArticles/:email", async (req, res) => {
+    app.get("/myArticles/:email",verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await articleCollection.find(query).toArray();

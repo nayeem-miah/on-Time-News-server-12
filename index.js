@@ -178,13 +178,17 @@ async function run() {
     });
     // add and get articles
     app.get("/articles", async (req, res) => {
+      const result = await articleCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/searchArticles", async (req, res) => {
       const search = req.query.search;
       // console.log(search);
-      let query = {
+      const query = {
         title: { $regex: search, $options: "i" },
       };
       const options = {};
-      const result = await articleCollection.find(options).toArray();
+      const result = await articleCollection.find(query, options).toArray();
       res.send(result);
     });
 

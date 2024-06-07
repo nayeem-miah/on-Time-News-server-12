@@ -135,13 +135,42 @@ async function run() {
       const result = await articleCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-    //-------- all articles approved admin------------------
-    app.patch("/isPremium-articles/:id", async (req, res) => {
+    //-------- all articles isPremium admin------------------
+    app.patch(
+      "/isPremium-articles/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = {
+          $set: {
+            isPremium: "Premium",
+          },
+        };
+        const result = await articleCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      }
+    );
+    app.patch("/viewCount/:id", async (req, res) => {
+      const view = req.body;
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
-          isPremium: "Premium",
+          viewCount: view.viewCount,
+        },
+      };
+      const result = await articleCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    app.patch("/decline/:id", async (req, res) => {
+      const newDecline = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          decline: newDecline.decline,
         },
       };
       const result = await articleCollection.updateOne(filter, updateDoc);
@@ -149,9 +178,21 @@ async function run() {
     });
     // add and get articles
     app.get("/articles", async (req, res) => {
+      const search = req.query.search;
+      // console.log(search);
+      let query = {
+        title: { $regex: search, $options: "i" },
+      };
+      const options = {};
+      const result = await articleCollection.find(options).toArray();
+      res.send(result);
+    });
+
+    app.get("/articlesIsPremuan", verifyToken, async (req, res) => {
       const result = await articleCollection.find().toArray();
       res.send(result);
     });
+
     app.get("/articles/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -182,7 +223,7 @@ async function run() {
     });
     app.patch("/updateArticles/:id", async (req, res) => {
       const article = req.body;
-      // console.log(article);
+      console.log(article);
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
@@ -195,6 +236,7 @@ async function run() {
           email: article.email,
           photo: article.photo,
           displayName: article.displayName,
+          viewCount: article.viewCount,
         },
       };
       const result = await articleCollection.updateOne(filter, updateDoc);

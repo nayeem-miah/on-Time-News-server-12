@@ -4,11 +4,11 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
-
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 // middlewares
-
+// console.log(process.env.STRIPE_SECRET_KEY);
 app.use(
   cors({
     origin: ["http://localhost:5173"],
@@ -75,8 +75,27 @@ async function run() {
       });
       res.send({ token: token });
     });
+
+    // payment----------create-payment-intent---------
+    app.post("/create-payment-intent", async (req, res) => {
+      const price = req.body.price;
+      // generate client secret
+      const priceCent = parseFloat(price) * 100;
+      // console.log();
+      if ( priceCent < 1) return;
+      const { client_secret } = await stripe.paymentIntents.create({
+        amount: priceCent,
+        currency: "usd",
+        // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+      // and client secret as response
+      res.send({ clientSecret: client_secret });
+    });
     // users related api----------------
-    app.get("/users",  async (req, res) => {
+    app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -153,8 +172,7 @@ async function run() {
       }
     );
 
-
-    // --------view count --------------------------apis 
+    // --------view count --------------------------apis
     app.patch("/viewCount/:id", async (req, res) => {
       const view = req.body;
       const id = req.params.id;
@@ -169,7 +187,7 @@ async function run() {
     });
 
     //  decline----------
-    app.patch("/decline/:id", async (req, res) => {
+    app.post("/decline/:id", async (req, res) => {
       const newDecline = req.body;
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -182,12 +200,16 @@ async function run() {
       res.send(result);
     });
     // add and get articles
-    app.get("/articles",verifyToken, async (req, res) => {
+    app.get("/articles", verifyToken, async (req, res) => {
       const result = await articleCollection.find().toArray();
       res.send(result);
     });
     app.get("/articlesCount", async (req, res) => {
-      const result = await articleCollection.find().sort({viewCount: -1}).limit(6).toArray();
+      const result = await articleCollection
+        .find()
+        .sort({ viewCount: -1 })
+        .limit(6)
+        .toArray();
       res.send(result);
     });
     app.get("/searchArticles", async (req, res) => {
@@ -220,7 +242,7 @@ async function run() {
     });
 
     // My articles
-    app.get("/myArticles/:email",verifyToken, async (req, res) => {
+    app.get("/myArticles/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await articleCollection.find(query).toArray();
@@ -236,7 +258,7 @@ async function run() {
     });
     app.patch("/updateArticles/:id", async (req, res) => {
       const article = req.body;
-      console.log(article);
+      // console.log(article);
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {

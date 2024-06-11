@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000;
 // console.log(process.env.STRIPE_SECRET_KEY);
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173",'https://b9a12-ontimenews.web.app','https://b9a12-ontimenews.firebaseapp.com/'],
   })
 );
 app.use(express.json());
@@ -36,9 +36,8 @@ async function run() {
     // <------------------------------collection -------------------->
     const articleCollection = client.db("OnTimeNewsDB").collection("articles");
     const userCollection = client.db("OnTimeNewsDB").collection("users");
-    const publisherCollection = client
-      .db("OnTimeNewsDB")
-      .collection("publisher");
+    const publisherCollection = client.db("OnTimeNewsDB").collection("publisher");
+    // const paymentCollection = client.db("OnTimeNewsDB").collection("payment");
 
     // middlewares verify token
     const verifyToken = (req, res, next) => {
@@ -82,7 +81,7 @@ async function run() {
       // generate client secret
       const priceCent = parseFloat(price) * 100;
       // console.log();
-      if ( priceCent < 1) return;
+      if (priceCent < 1) return;
       const { client_secret } = await stripe.paymentIntents.create({
         amount: priceCent,
         currency: "usd",
@@ -295,11 +294,17 @@ async function run() {
       res.send(result);
     });
 
+    // -----------------payment info -----------------
+    // app.post("/payment", async (req, res) => {
+    //   const newPayment = req.body;
+    //   const result = await paymentCollection.insertOne(newPayment);
+    //   res.send(result);
+    // });
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();

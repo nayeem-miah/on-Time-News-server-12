@@ -294,7 +294,7 @@ async function run() {
       res.send(result);
     });
 
-    // -----------------payment info -----------------
+    // -----------------payment info --------------
     // app.post("/payment", async (req, res) => {
     //   const newPayment = req.body;
     //   const result = await paymentCollection.insertOne(newPayment);

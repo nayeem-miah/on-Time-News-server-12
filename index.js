@@ -8,7 +8,6 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 // middlewares
-// console.log(process.env.STRIPE_SECRET_KEY);
 app.use(
   cors({
     origin: ["http://localhost:5173","http://localhost:5174",'https://b9a12-ontimenews.web.app','https://b9a12-ontimenews.firebaseapp.com/'],

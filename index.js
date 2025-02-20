@@ -202,6 +202,10 @@ async function run() {
       const result = await articleCollection.find().toArray();
       res.send(result);
     });
+    app.get("/recent-articles", async (req, res) => {
+      const result = await articleCollection.find().limit(6).toArray();
+      res.send(result);
+    });
     app.get("/articlesCount", async (req, res) => {
       const result = await articleCollection
         .find()

@@ -16,8 +16,8 @@ app.use(
 app.use(express.json());
 
 // console.log(process.env.DB_PASS);
-// const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bomlehy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
+// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bomlehy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -297,6 +297,16 @@ async function run() {
       const result = await paymentCollection.find().toArray();
       res.send(result)
     })
+
+    // get email ways history
+    app.get("/payment-history/:email", async (req, res)=>{
+       const email = req.params.email;
+       const query = { email: email };
+       const result = await paymentCollection.find(query).toArray();
+       res.send(result)
+    })
+
+
     
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

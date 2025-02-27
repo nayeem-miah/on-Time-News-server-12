@@ -16,9 +16,8 @@ app.use(
 app.use(express.json());
 
 // console.log(process.env.DB_PASS);
-
-const uri = 'mongodb://localhost:27017/'
-// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bomlehy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+// const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bomlehy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -29,7 +28,6 @@ const client = new MongoClient(uri, {
   },
 });
 
-// const authorizationCode = eyJhbGciOiJSUzI1NiIsImtpZCI6ImRjNjI2MmYzZTk3NzIzOWMwMDUzY2ViODY0Yjc3NDBmZjMxZmNkY2MiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiTmF5ZWVtIElzbGFtIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0l4Szg3MjY1NFFuVlBnWlp0ZjM2dUZVSjJaUjFJMnJzZGtfckF1RjZHbjVQeUJBcEVhPXM5Ni1jIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL2V4YTItZmIxNzAiLCJhdWQiOiJleGEyLWZiMTcwIiwiYXV0aF90aW1lIjoxNzQwNTcwODU2LCJ1c2VyX2lkIjoiOHBLRVFDSUVONFprdFJTZkN2V2hibjh5WFhmMiIsInN1YiI6IjhwS0VRQ0lFTjRaa3RSU2ZDdldoYm44eVhYZjIiLCJpYXQiOjE3NDA1NzA4NjAsImV4cCI6MTc0MDU3NDQ2MCwiZW1haWwiOiJuYXllZW01MTEzYUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJnb29nbGUuY29tIjpbIjExMTYyNDExMTQ2ODgwMTU4MTI1OCJdLCJlbWFpbCI6WyJuYXllZW01MTEzYUBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.NCagHPjU7LunFyWVBBbPr6u8NI5g7AmXGOn7szsgHUuYprgl-OPr9TaEEx7gbDf3df_CUjo9aYaRom6KVgh7Xw9noGjrwGzXo8qSuTTiCdTOMiObb_SqkJKaZy7QBAJN9L3GVlTfIEe3pix_Dc9YHpqEgAquJSQvYHENbJs05FL_aIBfmBLNtU73drH2LYPgrofAMKXdDq2gmzQnMqioDhFAwjGaJtNdsYEBp7SY0NmJRNAdR7yw67e-XFzM8JTltm7oxeZEABUiUVCcVUbfdCKnpPj3km4cWDmGIJ9EelVK1Xxnq3yEL5ZLppTo-OPuBMpaqLbgpe1qq132lEoxcQ
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -193,7 +191,7 @@ async function run() {
       res.send(result);
     });
     app.get("/recent-articles", async (req, res) => {
-      const result = await articleCollection.find().limit(6).toArray();
+      const result = await articleCollection.find().limit(6).sort({ _id: -1 }).toArray();
       res.send(result);
     });
     app.get("/articlesCount", async (req, res) => {
